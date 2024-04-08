@@ -47,9 +47,20 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function generateRandomStatus() {
-      return Math.random() < 0.8 ? "done" : "fail"; // Adjusted to 8:2 ratio
+    function generateReportRow(task, asOfDate, status, startTime, endTime, value) {
+      return `
+        <tr>
+          <td>${task}</td>
+          <td>${asOfDate}</td>
+          <td>${status}</td>
+          <td>${startTime}</td>
+          <td>${endTime}</td>
+          <td>${value}</td>
+        </tr>
+      `;
     }
+
+    let reports = [];
 
     function generateReport() {
       const tableBody = document.getElementById('reportTableBody');
@@ -59,36 +70,52 @@
       // Clear previous rows
       tableBody.innerHTML = '';
 
-      const currentDate = new Date(datePicker.value);
+      const currentDate = new Date();
+      const startTime = new Date(currentDate);
+      const endTime = new Date(startTime);
+      endTime.setMinutes(endTime.getMinutes() + 4);
 
-      for (let i = 1; i <= 4; i++) { // Generating 4 batches
-        const startTime = new Date(currentDate);
-        startTime.setMinutes(startTime.getMinutes() + (i - 1) * 4);
-        const endTime = new Date(startTime);
-        endTime.setMinutes(endTime.getMinutes() + 4);
+      for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) { // Generating 4-6 records in each batch
+        const task = `Task ${j}`;
+        const asOfDate = currentDate.toDateString();
+        const status = ''; // Status will be set later
+        const value = generateRandomValue(50, 100);
 
-        for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) { // Generating 4-6 records in each batch
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>Task ${j}</td>
-            <td>${currentDate.toDateString()}</td>
-            <td>${generateRandomStatus()}</td>
-            <td>${startTime.toLocaleTimeString()}</td>
-            <td>${endTime.toLocaleTimeString()}</td>
-            <td>${generateRandomValue(50, 100)}</td>
-          `;
-          if (!statusFilter || row.cells[2].textContent === statusFilter) {
-            tableBody.appendChild(row);
-          }
-        }
+        tableBody.innerHTML += generateReportRow(task, asOfDate, status, startTime.toLocaleTimeString(), '', value);
+
+        // Store report in array
+        reports.push({
+          task: task,
+          asOfDate: asOfDate,
+          status: status,
+          startTime: startTime,
+          value: value
+        });
       }
+
+      // Update end time and status after 4 minutes
+      setTimeout(function() {
+        const newEndTime = new Date(endTime);
+        newEndTime.setMinutes(newEndTime.getMinutes() + 4);
+        for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) {
+          const reportIndex = reports.length - (Math.floor(Math.random() * 3) + 4 - j);
+          const report = reports[reportIndex];
+          report.endTime = newEndTime.toLocaleTimeString();
+          report.status = Math.random() < 0.8 ? "done" : "fail"; // Adjusted to 8:2 ratio
+
+          // Update table row
+          const row = tableBody.rows[reportIndex];
+          row.cells[4].textContent = report.endTime;
+          row.cells[2].textContent = report.status;
+        }
+      }, 240000); // 4 minutes in milliseconds
     }
 
-    document.getElementById('datePicker').addEventListener('change', generateReport);
-    document.getElementById('statusFilter').addEventListener('change', generateReport);
-
-    // Initial report generation
+    // Call generateReport initially
     generateReport();
+
+    // Generate report every 4 minutes
+    setInterval(generateReport, 240000); // 4 minutes in milliseconds
   </script>
 </body>
 </html>
