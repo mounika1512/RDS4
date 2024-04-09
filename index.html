@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reports Distribution System</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports Distribution System</title>
+<style>
     table {
       border-collapse: collapse;
       width: 100%;
@@ -14,108 +14,80 @@
       padding: 8px;
       text-align: center;
     }
-  </style>
+</style>
 </head>
 <body>
-  <h1>Reports Distribution System</h1>
-  <label for="datePicker">Select Date:</label>
-  <input type="date" id="datePicker">
-  <select id="statusFilter">
-    <option value="">All</option>
-    <option value="done">Done</option>
-    <option value="fail">Fail</option>
-  </select>
-  <br><br>
-  <table>
-    <thead>
-      <tr>
-        <th>Task</th>
-        <th>As of Date</th>
-        <th>Status</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Value</th>
-      </tr>
-    </thead>
-    <tbody id="reportTableBody">
-      
-    </tbody>
-  </table>
-
+<h1>Reports Distribution System</h1>
+<label for="datePicker">Select Date:</label>
+<input type="date" id="datePicker">
+<select id="statusFilter">
+<option value="">All</option>
+<option value="done">Done</option>
+<option value="fail">Fail</option>
+</select>
+<br><br>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>As of Date</th>
+<th>Status</th>
+<th>Start Time</th>
+<th>End Time</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody id="reportTableBody">
+</tbody>
+</table>
+ 
   <script>
     function generateRandomValue(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-
-    function generateReportRow(task, asOfDate, status, startTime, endTime, value) {
-      return `
-        <tr>
-          <td>${task}</td>
-          <td>${asOfDate}</td>
-          <td>${status}</td>
-          <td>${startTime}</td>
-          <td>${endTime}</td>
-          <td>${value}</td>
-        </tr>
-      `;
+ 
+    function generateRandomStatus() {
+      return Math.random() < 0.8 ? "done" : "fail"; // Adjusted to 8:2 ratio
     }
-
-    let reports = [];
-
+ 
     function generateReport() {
       const tableBody = document.getElementById('reportTableBody');
       const datePicker = document.getElementById('datePicker');
       const statusFilter = document.getElementById('statusFilter').value;
-
+ 
       // Clear previous rows
       tableBody.innerHTML = '';
-
-      const currentDate = new Date();
-      const startTime = new Date(currentDate);
-      const endTime = new Date(startTime);
-      endTime.setMinutes(endTime.getMinutes() + 4);
-
-      for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) { // Generating 4-6 records in each batch
-        const task = `Task ${j}`;
-        const asOfDate = currentDate.toDateString();
-        const status = ''; // Status will be set later
-        const value = generateRandomValue(50, 100);
-
-        tableBody.innerHTML += generateReportRow(task, asOfDate, status, startTime.toLocaleTimeString(), '', value);
-
-        // Store report in array
-        reports.push({
-          task: task,
-          asOfDate: asOfDate,
-          status: status,
-          startTime: startTime,
-          value: value
-        });
-      }
-
-      // Update end time and status after 4 minutes
-      setTimeout(function() {
-        const newEndTime = new Date(endTime);
-        newEndTime.setMinutes(newEndTime.getMinutes() + 4);
-        for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) {
-          const reportIndex = reports.length - (Math.floor(Math.random() * 3) + 4 - j);
-          const report = reports[reportIndex];
-          report.endTime = newEndTime.toLocaleTimeString();
-          report.status = Math.random() < 0.8 ? "done" : "fail"; // Adjusted to 8:2 ratio
-
-          // Update table row
-          const row = tableBody.rows[reportIndex];
-          row.cells[4].textContent = report.endTime;
-          row.cells[2].textContent = report.status;
+ 
+      const currentDate = new Date(datePicker.value);
+ 
+      for (let i = 1; i <= 4; i++) { // Generating 4 batches
+        const startTime = new Date(currentDate);
+        startTime.setMinutes(startTime.getMinutes() + (i - 1) * 4);
+        const endTime = new Date(startTime);
+        endTime.setMinutes(endTime.getMinutes() + 4);
+ 
+        for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) { // Generating 4-6 records in each batch
+          const row = document.createElement('tr');
+          row.innerHTML = `
+<td>Task ${j}</td>
+<td>${currentDate.toDateString()}</td>
+<td>${generateRandomStatus()}</td>
+<td>${startTime.toLocaleTimeString()}</td>
+<td>${endTime.toLocaleTimeString()}</td>
+<td>${generateRandomValue(50, 100)}</td>
+          `;
+          if (!statusFilter || row.cells[2].textContent === statusFilter) {
+            tableBody.appendChild(row);
+          }
         }
-      }, 240000); // 4 minutes in milliseconds
+      }
     }
-
-    // Call generateReport initially
+ 
+    document.getElementById('datePicker').addEventListener('change', generateReport);
+    document.getElementById('statusFilter').addEventListener('change', generateReport);
+ 
+    // Initial report generation
     generateReport();
-
-    // Generate report every 4 minutes
-    setInterval(generateReport, 240000); // 4 minutes in milliseconds
-  </script>
+</script>
 </body>
 </html>
