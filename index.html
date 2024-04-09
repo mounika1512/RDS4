@@ -1,93 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reports Distribution System</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports Distribution System</title>
+  <style>
     table {
-      border-collapse: collapse;
       width: 100%;
+      border-collapse: collapse;
     }
     th, td {
       border: 1px solid black;
       padding: 8px;
-      text-align: center;
+      text-align: left;
     }
-</style>
+  </style>
 </head>
 <body>
-<h1>Reports Distribution System</h1>
-<label for="datePicker">Select Date:</label>
-<input type="date" id="datePicker">
-<select id="statusFilter">
-<option value="">All</option>
-<option value="done">Done</option>
-<option value="fail">Fail</option>
-</select>
-<br><br>
-<table>
-<thead>
-<tr>
-<th>Task</th>
-<th>As of Date</th>
-<th>Status</th>
-<th>Start Time</th>
-<th>End Time</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody id="reportTableBody">
-</tbody>
-</table>
- 
+  <h1>Reports Distribution System</h1>
+  <div style="display: flex; flex-direction: column;">
+    <label for="datePicker">Select Date:</label>
+    <input type="date" id="datePicker">
+  </div>
+  <div style="display: flex; flex-direction: column;">
+    <label for="statusFilter">Search by Status:</label>
+    <select id="statusFilter">
+      <option value="">All</option>
+      <option value="Done">Done</option>
+      <option value="Fail">Fail</option>
+    </select>
+  </div>
+  <div style="display: flex; flex-direction: column;">
+    <button id="refreshButton">Refresh</button>
+  </div>
+  <br><br>
+  <table id="reportTable">
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>As of Date</th>
+        <th>Batch</th>
+        <th>Status</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data will be dynamically added here -->
+    </tbody>
+  </table>
+
   <script>
     function generateRandomValue(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+      return Math.floor(Math.random() * (max - min + 1) + min);
     }
- 
+
     function generateRandomStatus() {
-      return Math.random() < 0.8 ? "done" : "fail"; // Adjusted to 8:2 ratio
+      return Math.random() < 0.5 ? 'Done' : 'Fail';
     }
- 
-    function generateReport() {
-      const tableBody = document.getElementById('reportTableBody');
-      const datePicker = document.getElementById('datePicker');
+
+    function clearReport() {
+      const tableBody = document.querySelector('#reportTable tbody');
+      tableBody.innerHTML = ''; // Clear existing rows
+    }
+
+    function generateReport(batchNumber) {
+      const tableBody = document.querySelector('#reportTable tbody');
+      const currentTime = new Date();
+      const startTime = currentTime.toLocaleTimeString();
+      const asOfDate = document.getElementById('datePicker').value; // Get the selected date
       const statusFilter = document.getElementById('statusFilter').value;
- 
-      // Clear previous rows
-      tableBody.innerHTML = '';
- 
-      const currentDate = new Date(datePicker.value);
- 
-      for (let i = 1; i <= 4; i++) { // Generating 4 batches
-        const startTime = new Date(currentDate);
-        startTime.setMinutes(startTime.getMinutes() + (i - 1) * 4);
-        const endTime = new Date(startTime);
-        endTime.setMinutes(endTime.getMinutes() + 4);
- 
-        for (let j = 1; j <= Math.floor(Math.random() * 3) + 4; j++) { // Generating 4-6 records in each batch
-          const row = document.createElement('tr');
-          row.innerHTML = `
-<td>Task ${j}</td>
-<td>${currentDate.toDateString()}</td>
-<td>${generateRandomStatus()}</td>
-<td>${startTime.toLocaleTimeString()}</td>
-<td>${endTime.toLocaleTimeString()}</td>
-<td>${generateRandomValue(50, 100)}</td>
-          `;
-          if (!statusFilter || row.cells[2].textContent === statusFilter) {
-            tableBody.appendChild(row);
-          }
-        }
+
+      for (let i = 0; i < Math.floor(Math.random() * 4) + 4; i++) {
+        const task = `Task${tableBody.children.length + 1}`;
+        const value = generateRandomValue(50, 100);
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${task}</td>
+          <td>${asOfDate}</td> <!-- Set the as of date -->
+          <td>Batch ${batchNumber}</td>
+          <td></td> <!-- Empty status cell -->
+          <td>${startTime}</td>
+          <td class="endTime"></td>
+          <td>${value}</td>
+        `;
+        tableBody.appendChild(row);
       }
+
+      updateEndTimes();
     }
- 
-    document.getElementById('datePicker').addEventListener('change', generateReport);
-    document.getElementById('statusFilter').addEventListener('change', generateReport);
- 
-    // Initial report generation
-    generateReport();
-</script>
+
+    function updateEndTimes() {
+      const rows = document.querySelectorAll('#reportTable tbody tr');
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      rows.forEach(row => {
+        setInterval(() => {
+          const endTimeCell = row.querySelector('.endTime');
+          const statusCell = row.cells[3];
+          const status = generateRandomStatus();
+          const endTimeString = new Date().toLocaleTimeString();
+          if (!statusFilter || status === statusFilter) {
+            statusCell.textContent = status;
+          }
+          if (endTimeCell.textContent === '') {
+            endTimeCell.textContent = endTimeString;
+          }
+        }, 4 * 60000); // 4 minutes in milliseconds
+      });
+    }
+
+    document.getElementById('datePicker').addEventListener('change', function() {
+      clearReport();
+      generateReport(1); // Starting with batch 1
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', function() {
+      const tableBody = document.querySelector('#reportTable tbody');
+      tableBody.innerHTML = ''; // Clear existing rows
+      generateReport(1); // Starting with batch 1
+    });
+
+    document.getElementById('refreshButton').addEventListener('click', function() {
+      const tableBody = document.querySelector('#reportTable tbody');
+      tableBody.innerHTML = ''; // Clear existing rows
+      generateReport(1); // Starting with batch 1
+    });
+
+    // Initial generation of report
+    generateReport(1); // Starting with batch 1
+  </script>
 </body>
 </html>
