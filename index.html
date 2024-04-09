@@ -14,15 +14,21 @@
       padding: 8px;
       text-align: left;
     }
+    .input-container {
+      margin-bottom: 10px;
+    }
+    .input-container label, .input-container select, .input-container input, .input-container button {
+      width: 150px;
+    }
   </style>
 </head>
 <body>
   <h1>Reports Distribution System</h1>
-  <div style="display: flex; flex-direction: column;">
+  <div class="input-container">
     <label for="datePicker">Select Date:</label>
     <input type="date" id="datePicker">
   </div>
-  <div style="display: flex; flex-direction: column;">
+  <div class="input-container">
     <label for="statusFilter">Search by Status:</label>
     <select id="statusFilter">
       <option value="">All</option>
@@ -30,7 +36,7 @@
       <option value="Fail">Fail</option>
     </select>
   </div>
-  <div style="display: flex; flex-direction: column;">
+  <div class="input-container">
     <button id="refreshButton">Refresh</button>
   </div>
   <br><br>
